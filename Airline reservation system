@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+
+#define TOTAL_SEATS 10
+#define MAX_NAME_LENGTH 50
+
+typedef struct {
+    int seatNumber;
+    bool isReserved;
+    char reservationDate[20]; // To store the date in the format "YYYY-MM-DD"
+    char passengerName[MAX_NAME_LENGTH]; // To store passenger's name
+} Seat;
+typedef struct {
+    char flightName[50];
+    Seat seats[TOTAL_SEATS];
+} Flight;
+
+void initializeFlight(Flight *flight) {
+    // Initialize flight name and seats
+    snprintf(flight->flightName, sizeof(flight->flightName), "Flight A123");
+    for (int i = 0; i < TOTAL_SEATS; i++) {
+        flight->seats[i].seatNumber = i + 1;
+        flight->seats[i].isReserved = false;
+        flight->seats[i].reservationDate[0] = '\0'; // Empty date
+        flight->seats[i].passengerName[0] = '\0'; // Empty passenger name
+    }
+}
+
+void displaySeatAvailability(Flight flight) {
+    printf("Seat Availability for %s:\n", flight.flightName);
+    for (int i = 0; i < TOTAL_SEATS; i++) {
+        if (!flight.seats[i].isReserved) {
+            printf("Seat %d is available\n", flight.seats[i].seatNumber);
+        } else {
+            printf("Seat %d is reserved on %s for %s\n", flight.seats[i].seatNumber, 
+                   flight.seats[i].reservationDate, flight.seats[i].passengerName);
+        }
+    }
+}
+
+void reserveSeat(Flight *flight) {
+    int seatNumber;
+    printf("Enter seat number to reserve (1-%d): ", TOTAL_SEATS);
+    scanf("%d", &seatNumber);
+    if (seatNumber < 1 || seatNumber > TOTAL_SEATS) {
+        printf("Invalid seat number!\n");
+        return;
+    }
+
+    if (flight->seats[seatNumber - 1].isReserved) {
+        printf("Seat %d is already reserved!\n", seatNumber);
+    } else {
+        // Prompt for passenger name
+        char passengerName[MAX_NAME_LENGTH];
+        printf("Enter passenger name: ");
+        scanf(" %[^\n]s", passengerName);
+        flight->seats[seatNumber - 1].isReserved = true;
+        snprintf(flight->seats[seatNumber - 1].passengerName, sizeof(flight->seats[seatNumber - 1].passengerName),
+                 "%s", passengerName);
+
+        // Get the current date
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
+        snprintf(flight->seats[seatNumber - 1].reservationDate, sizeof(flight->seats[seatNumber - 1].reserv
+ationDate),
+                 "%04d-%02d-%02d", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
+
+        printf("Seat %d has been reserved successfully on %s for %s.\n", seatNumber, 
+               flight->seats[seatNumber - 1].reservationDate, flight->seats[seatNumber - 1].passengerName);
+    }
+}
+
+int main() {
+    Flight flight;
+    initializeFlight(&flight);
+    int choice;
+
+    while (true) {
+        printf("\nAirline Reservation System\n");
+        printf("1. Display Seat Availability\n");
+        printf("2. Reserve a Seat\n");
+        printf("3. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                displaySeatAvailability(flight);
+                break;
+            case 2:
+                reserveSeat(&flight);
+                break;
+            case 3:
+                printf("Exiting program...\n");
+                exit(0);
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+
